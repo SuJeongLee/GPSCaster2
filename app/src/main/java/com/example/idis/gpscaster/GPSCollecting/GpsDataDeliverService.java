@@ -57,7 +57,10 @@ public class GpsDataDeliverService extends Service implements Runnable, GoogleAp
     private static final String TAG = "GpsDataDeliverService";
     //DB
     public static final String TABLE_GPSDATA = "GPSDATA";
+    public static final String TABLE_PATTERN = "PATTERNDATA";
     private GPSDatabase mGPSDatabase;
+    private PatternDatabase mPatternDatabase;
+
 
     //Immortal Service
     private static final int REBOOT_DELAY_TIMER = 10 * 1000;
@@ -86,6 +89,8 @@ public class GpsDataDeliverService extends Service implements Runnable, GoogleAp
     private String place_Id;
     private String place_type;
 
+    //private
+
     public GpsDataDeliverService() {
     }
 
@@ -98,7 +103,9 @@ public class GpsDataDeliverService extends Service implements Runnable, GoogleAp
 
         //DB Open
         mGPSDatabase = mGPSDatabase.getInsance(getApplicationContext());
+        mPatternDatabase = mPatternDatabase.getInsance(getApplicationContext());
         mGPSDatabase.open();
+        mPatternDatabase.open();
         Log.d(TAG, "GPS Db Open");
         mIsRunning = false;
     }
@@ -231,15 +238,33 @@ public class GpsDataDeliverService extends Service implements Runnable, GoogleAp
 
         GPSValues.put("a_lat", x);
         GPSValues.put("a_lng", y);
-
         GPSValues.put("a_date", strCurDate);
         GPSValues.put("a_time", strCurTime);
         GPSValues.put("a_day", day);
         GPSValues.put("a_placeid", p_Id);
         GPSValues.put("a_placetype", p_type);
-
         mGPSDatabase.insertSQL(TABLE_GPSDATA, GPSValues);
 
+        //time, day, placeId 비교
+        /* PatternDatabase */
+        ContentValues GPSValues2 = new ContentValues();
+        Classificiation c = new Classificiation();
+        int day1 = c.getDay(CurDateFormat);
+        int time1 = c.getTime(CurTimeFormat);
+        GPSValues2.put("a_day", day1);
+        GPSValues2.put("a_time", time1);
+        GPSValues2.put("a_placeid",p_Id);
+        GPSValues2.put("a_placetype",p_type);
+
+/*
+        데이&타임&장소ID 추출->frequency get
+        frequency ++
+        update
+        전역변수에 과거자료저장 ->
+*/
+
+
+        mPatternDatabase.insertSQL(TABLE_PATTERN, GPSValues2);
     }
 
     String getPlaceDetail() {
@@ -338,6 +363,8 @@ public class GpsDataDeliverService extends Service implements Runnable, GoogleAp
 
         return place_type;
     }
+
+
 
     private void registerRestartAlarm() {
         Intent intent = new Intent(GpsDataDeliverService.this, RestartServiceForGpsData.class);

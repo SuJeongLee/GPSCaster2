@@ -1,15 +1,12 @@
 package com.example.idis.gpscaster;
 
-import android.*;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.support.multidex.MultiDex;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -25,11 +22,9 @@ import android.widget.Toast;
 import com.example.idis.gpscaster.CustomUi.CustomViewPager;
 import com.example.idis.gpscaster.Frag2_GPSCollecting.Frag2_GPSCollectingFragment;
 import com.example.idis.gpscaster.Frag3_RealtimeGPS.Frag3_RealtimeGPSFragment;
-import com.example.idis.gpscaster.Frag4_Setting.Frag4_SettingFragment;
+import com.example.idis.gpscaster.Frag4_CreatePattern.Frag4_SettingFragment;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.places.Places;
-import com.google.android.gms.location.places.ui.PlacePicker;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
 

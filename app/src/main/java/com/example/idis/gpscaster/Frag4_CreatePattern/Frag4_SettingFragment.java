@@ -1,4 +1,4 @@
-package com.example.idis.gpscaster.Frag4_Setting;
+package com.example.idis.gpscaster.Frag4_CreatePattern;
 
 
 import android.os.Bundle;
@@ -36,7 +36,7 @@ public class Frag4_SettingFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.frag4_setting_gps, container, false);
+        View rootView = inflater.inflate(R.layout.frag4_create_pattern, container, false);
         return rootView;
     }
 }

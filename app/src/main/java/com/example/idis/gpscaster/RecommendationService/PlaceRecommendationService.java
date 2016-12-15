@@ -31,8 +31,11 @@ import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -76,7 +79,7 @@ public class PlaceRecommendationService implements
     private String testHttp = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=52.20956489999999,21.0208235&radius=400&types=cafe&key=AIzaSyAkEp3BvsggrTFL6u2cQeLDZOmwSjyrk68";
 
     //Its own
-    public static PlaceRecommendationService placeRecommendationService=null;
+    private static PlaceRecommendationService placeRecommendationService=null;
 
     //For type searching
     GPSDatabase mGPSDatabase;
@@ -88,7 +91,7 @@ public class PlaceRecommendationService implements
     String page_; //Notification에 전달할 json
 
     //PlaceDetail ArrayList
-    public ArrayList<PlaceInfo> place_arr = new ArrayList<PlaceInfo>();
+    private static ArrayList<PlaceInfo> place_arr=null ;
 
     //View
     View rootView;
@@ -113,6 +116,8 @@ ArrayList에 저장해두었다가 10번의 횟수가 채워지면
         mGPSDatabase = mGPSDatabase.getInsance(context);
         mGPSDatabase.open();
 
+        place_arr = new ArrayList<PlaceInfo>();
+
 
 
     }
@@ -120,10 +125,14 @@ ArrayList에 저장해두었다가 10번의 횟수가 채워지면
 
     public static PlaceRecommendationService getInstance(Context context, Resources resources){
         if(placeRecommendationService == null){
-            placeRecommendationService = new PlaceRecommendationService(context,resources );
+            placeRecommendationService = new PlaceRecommendationService(context,resources);
             Log.d(TAG2, "PlaceRecommendationService new ");
         }
 
+        return placeRecommendationService;
+    }
+
+    public static PlaceRecommendationService returnObject(){
         return placeRecommendationService;
     }
 
@@ -194,6 +203,7 @@ ArrayList에 저장해두었다가 10번의 횟수가 채워지면
             /*ArrayList size check */
             Log.d(TAG2, "FROM NOW NOTIFICATION !! ");
             Log.d(TAG2, "place arr size = "+place_arr.size());
+            Log.d(TAG2, "place arr size2 = "+getPlace_arr().size());
             notificationService();
         }
     }
@@ -212,10 +222,6 @@ ArrayList에 저장해두었다가 10번의 횟수가 채워지면
 
     public void notificationService(){
 
-        //Serializable Bundle
-        /*Bundle bundle = new Bundle();
-        bundle.putSerializable("ArrayList",placeRecommendationService);
-*/
         NotificationManager manager= (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         NotificationCompat.Builder builder = (NotificationCompat.Builder) new NotificationCompat.Builder(context)
@@ -224,11 +230,10 @@ ArrayList에 저장해두었다가 10번의 횟수가 채워지면
                 .setContentText("ALPHOGO")                                //알림창에서의 제목
                 .setContentText("Do you want me to suggest the places nearby?");
 
-        //Intent intent = new Intent(context, Notifi.class);
-        Intent intent = new Intent(context, TransitActivity.class);
+        Intent intent = new Intent(context, Notifi.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        intent.putExtra("intent1", "transfer intent");
-        intent.putExtra("arrayList",place_arr);
+        intent.putExtra("intent1", "aaa");
+        savearr();
         //클릭할 때 까지 액티비티 실행을 보류하고 있는 PendingIntent 객체 생성
         PendingIntent pending = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_ONE_SHOT);
         builder.setContentIntent(pending);
@@ -238,7 +243,6 @@ ArrayList에 저장해두었다가 10번의 횟수가 채워지면
         manager.notify(0, notification);
         //NotificationManager가 알림(notification)표시, id는 알림 구분용
     }
-
 
     @Override
     public void onConnected(Bundle bundle) { Log.d(TAG, "onConnected");
@@ -256,9 +260,38 @@ ArrayList에 저장해두었다가 10번의 횟수가 채워지면
 
     public ArrayList<PlaceInfo> getPlace_arr(){
         Log.d(TAG2, "getPlace_arr return ");
-     //   Log.d(TAG2, "place size = "+getPlace_arr().size());
-        return this.place_arr;
+        Log.d(TAG2, "place arr  in GetPlaceArr  = "+place_arr.size());
+        return place_arr;
     }
+
+    public void savearr(){
+        FileOutputStream fos = null;
+        ObjectOutputStream oos = null;
+
+        File data = context.getDir(context.getPackageName(), Context.MODE_PRIVATE);
+        try{
+            fos = new FileOutputStream(new File(data+"/"+"arr.txt"));
+            oos = new ObjectOutputStream(fos);
+            oos.writeObject(place_arr);
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }finally {
+            if(fos != null)
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            if(oos != null)
+                try {
+                    oos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+        }
+    }
+
 
     class Thread1 extends Thread{
         @Override
@@ -391,6 +424,7 @@ ArrayList에 저장해두었다가 10번의 횟수가 채워지면
             }
         }
     }
+
 
 
 }

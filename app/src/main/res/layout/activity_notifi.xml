@@ -1,5 +1,32 @@
-    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/map"
-        android:name="com.google.android.gms.maps.SupportMapFragment"/>
+        android:orientation="vertical">
+
+        <fragment
+            android:id="@+id/map2"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="5"
+            android:name="com.google.android.gms.maps.SupportMapFragment"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="@color/newPurple">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:scrollbars="vertical"
+            android:id="@+id/tv1"
+            android:background="#ffffff"
+            android:padding="5dp"
+            android:textColor="@color/keyguard_avatar_frame_shadow_color"
+            />
+        </LinearLayout>
+
+    </LinearLayout>
