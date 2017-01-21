@@ -11,8 +11,8 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-
-    <!-- Tool Bar Layout -->
+<!--
+    &lt;!&ndash; Tool Bar Layout &ndash;&gt;
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolBar"
         android:layout_width="match_parent"
@@ -44,7 +44,7 @@
 
 
 
-    </android.support.v7.widget.Toolbar>
+    </android.support.v7.widget.Toolbar>-->
 
     <android.support.v4.widget.DrawerLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
@@ -177,7 +177,7 @@
                         android:id="@+id/btn_setting"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="Setting"
+                        android:text="Pattern"
                         android:textColor="@color/white"
                         android:background="@color/Indigo_800"
                         android:gravity="left|center_vertical"
@@ -205,7 +205,7 @@
                         android:id="@+id/btn_extra1"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="Extra"
+                        android:text="Setting"
                         android:textColor="@color/white"
                         android:background="@color/Indigo_800"
                         android:gravity="left|center_vertical"

@@ -22,7 +22,9 @@ import android.widget.Toast;
 import com.example.idis.gpscaster.CustomUi.CustomViewPager;
 import com.example.idis.gpscaster.Frag2_GPSCollecting.Frag2_GPSCollectingFragment;
 import com.example.idis.gpscaster.Frag3_RealtimeGPS.Frag3_RealtimeGPSFragment;
-import com.example.idis.gpscaster.Frag4_CreatePattern.Frag4_SettingFragment;
+import com.example.idis.gpscaster.Frag4_CreatePattern.Frag4_PatternFragment;
+import com.example.idis.gpscaster.Frag5_Setting.Frag5_SettingFragment;
+import com.example.idis.gpscaster.Frag5_Setting.ListData;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 
@@ -54,6 +56,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private Button btn_extra1;
     private Button btn_extra2;
 
+    private ListData listData;
+
 
     private View.OnClickListener BtnOnClickListener = new View.OnClickListener() {
         @Override
@@ -77,8 +81,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                     mainPager.setCurrentItem(2);
                     Log.i("Main", "Btn3 Clicked!");
                     break;
+                case R.id.btn_extra1 :
+                    drawerLayout.closeDrawers();
+                    mainPagerAdapter.notifyDataSetChanged();
+                    mainPager.setCurrentItem(3);
+                    Log.i("Main", "Btn4 Clicked!");
+                    break;
                 default:
-
                     drawerLayout.closeDrawers();
                     mainPagerAdapter.notifyDataSetChanged();
                     Log.i("Main", "Extra btn Clicked! ");
@@ -99,37 +108,18 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         GPSDetect();
         primaryUiSetting();
         secondUiSetting();
-
-/*
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addApi(Places.GEO_DATA_API)
-                .addApi(Places.PLACE_DETECTION_API)
-                .enableAutoManage(this, GOOGLE_API_CLIENT_ID, this)
-                .build();
-
-
-        if (mGoogleApiClient.isConnected()) {
-            if (ContextCompat.checkSelfPermission(MainActivity.this,
-                    android.Manifest.permission.ACCESS_FINE_LOCATION)
-                    != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(MainActivity.this,
-                        new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                        PERMISSION_REQUEST_CODE);
-            } else
-                GPSDetect();
-        }
-*/
+        listData = listData.getInstace(getApplicationContext());
 
     }
     public void primaryUiSetting(){
         // Set a toolbar to  replace to action bar
-        toolbar = (Toolbar) findViewById(R.id.toolBar);
+        /*toolbar = (Toolbar) findViewById(R.id.toolBar);
         setSupportActionBar(toolbar);
 
         // Display toggle Icon for Drawer Menu
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("");
-
+        */
         // Setting the Drawer Toggle Icon
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 
@@ -251,7 +241,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         //private HomeFragment dummy1Fragment;
         private Frag2_GPSCollectingFragment dummy2Fragment;
         private Frag3_RealtimeGPSFragment dummy3Fragment;
-        private Frag4_SettingFragment dummy4Fragment;
+        private Frag4_PatternFragment dummy4Fragment;
+        private Frag5_SettingFragment dummy5Fragment;
 
 
         public MainPagerAdapter(android.support.v4.app.FragmentManager fm) {
@@ -259,7 +250,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             //dummy1Fragment = HomeFragment.newInstance();
             dummy2Fragment = Frag2_GPSCollectingFragment.newInstance();
             dummy3Fragment = Frag3_RealtimeGPSFragment.newInstance();
-            dummy4Fragment = Frag4_SettingFragment.newInstance();
+            dummy4Fragment = Frag4_PatternFragment.newInstance();
+            dummy5Fragment = new Frag5_SettingFragment();
         }
 
         @Override
@@ -279,6 +271,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 case 2:
                     Log.e("main","MainPagerAdapter getItem2");
                     return dummy4Fragment;
+                case 3:
+                    Log.e("main", "MainPagerAdapter getItem3");
+                    return dummy5Fragment;
 
                 default:
                     return null;
@@ -287,7 +282,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
         @Override
         public int getCount() {
-            return 3;
+            return 4;
         }
 
         @Override
@@ -298,16 +293,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 case 1:
                     return "임시";
                 case 2:
-                    return "임시";
+                    return "Pattern";
+                case 3:
+                    return "Setting";
             }
 
             return null;
         }
 
-    }// The end of Class MainPagerAdapter
-
-
-    // Return ViewPager for control the innerViewpager's CurrentItem
+    }
     public CustomViewPager getInnerViewPager(){
         return mainPager;
     }

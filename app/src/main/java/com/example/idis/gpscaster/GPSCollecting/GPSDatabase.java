@@ -88,6 +88,7 @@ public class GPSDatabase {
 
     private class DatabaseHelper extends SQLiteOpenHelper {
 
+        SQLiteDatabase db1 ;
         public DatabaseHelper(Context context, String filePath) {
             super(context, filePath, null, DB_VERSION);
             Log.e(TAG,"dbhelper start");
@@ -95,7 +96,7 @@ public class GPSDatabase {
 
         @Override
         public void onCreate(SQLiteDatabase db) {
-
+            this.db1 = db;
             //Create Database Table
             String SQL = "create table if not exists "+TABLE_GPSDATA +
                     "(a_id INTEGER PRIMARY KEY AUTOINCREMENT, "+//ID Index
@@ -105,9 +106,9 @@ public class GPSDatabase {
                     "a_time TEXT,"+
                     "a_day INT,"+//sunday-1 monday-2 ..sat-6
                     "a_placeid TEXT,"+
-                    "a_placetype TEXT)";//cafe|point_of_interest..
+                    "a_placetype TEXT);";//cafe|point_of_interest..
             db.execSQL(SQL);
-            Log.e(TAG,"createDB");
+            Log.d(TAG,"createDB");
 
         }
 

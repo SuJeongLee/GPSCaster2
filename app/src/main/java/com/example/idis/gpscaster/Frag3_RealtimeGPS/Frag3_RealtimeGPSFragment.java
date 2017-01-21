@@ -18,7 +18,7 @@ import com.example.idis.gpscaster.RecommendationService.PlaceRecommendationServi
  */
 public class Frag3_RealtimeGPSFragment extends Fragment {
     private Button btn_PlaceRecommend;
-
+    PlaceRecommendationService placeRecommendationService;
     public static Frag3_RealtimeGPSFragment newInstance() {
         Frag3_RealtimeGPSFragment fragment =
                 new Frag3_RealtimeGPSFragment();
@@ -48,7 +48,6 @@ public class Frag3_RealtimeGPSFragment extends Fragment {
             public void onClick(View v) {
              //  getActivity().startService(new Intent(getActivity(),PlaceRecommendationService.class));
 
-                PlaceRecommendationService placeRecommendationService=null;
                 placeRecommendationService = placeRecommendationService.getInstance(getContext(), getResources());
 
                 /*

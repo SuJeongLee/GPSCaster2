@@ -9,6 +9,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -45,6 +46,12 @@ import java.io.StreamCorruptedException;
 import java.util.ArrayList;
 
 public class Notifi extends FragmentActivity implements
+
+        //얘는 arrayList 읽어서 notification 하는애임
+        //얘를 사용할거면 따로 arrayList 만들어서 얘가 읽게 만들면 됨
+        // 근데 그렇게 할 경우 충돌이 예상되긴 함 !
+
+        //아예 다르게 하는게 더 좋을거같음
         Serializable,
         OnMapReadyCallback,
         GoogleMap.OnMapClickListener, GoogleMap.OnMarkerClickListener {
@@ -61,11 +68,9 @@ public class Notifi extends FragmentActivity implements
     private Bitmap marker_on;
     private Bitmap marker_off;
 
-    //From the PlaceRecommendation Service ->> Take Place ArrayList
-    private static PlaceRecommendationService placeRecommendationService;
     private ArrayList<PlaceInfo> placeInfos;
     private TextView tv1;
-    private Marker prvMarker = null ;
+    private Marker prvMarker = null;
 
     private int marker_num = 0;
 
@@ -87,8 +92,11 @@ public class Notifi extends FragmentActivity implements
         Intent i = getIntent();
         String a = i.getStringExtra("KEY");
 
-        tv1 = (TextView)findViewById(R.id.tv1);
+        tv1 = (TextView) findViewById(R.id.tv1);
+        tv1.setMovementMethod( new ScrollingMovementMethod());
         tv1.setText(a);
+
+        Log.d(TAG, "(OnCreate) ! ");
 
         //Bitmap Setting
         marker_off = BitmapFactory.decodeResource(getBaseContext().getResources(),
@@ -100,21 +108,26 @@ public class Notifi extends FragmentActivity implements
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+
+
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
 
+        readArr();
+
         Log.d(TAG, "onMapReaady");
         mMap = googleMap;
 
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(52.217135, 21.014932), 15));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(placeInfos.get(0).getLat(), placeInfos.get(0).getLat()), 15));
+        Log.d(TAG, "moveCamera "+placeInfos.get(0).getName()+ placeInfos.get(0).getVicinity());
         //mMap.addMarker(new MarkerOptions().position(start).title("Marker in Sydney"));
 
         mMap.setOnMarkerClickListener(this);
         mMap.setOnMapClickListener(this);
 
-        readArr();
+
         setCustomMarkerView(googleMap);
         getSampleMarkerItems(googleMap);
     }
@@ -136,16 +149,16 @@ public class Notifi extends FragmentActivity implements
 
         ArrayList<MarkerItem> sampleList = new ArrayList();
 
-        for(int i=0; i<5; i++)
-         sampleList.add(new MarkerItem(placeInfos.get(i).getLat(), placeInfos.get(i).getLng()));
+        for (int i = 0; i < placeInfos.size(); i++)
+            sampleList.add(new MarkerItem(placeInfos.get(i).getLat(), placeInfos.get(i).getLng()));
 
-        for(int i=0; i<sampleList.size(); i++)
-            addMarker(sampleList.get(i), false, i );
+        for (int i = 0; i < sampleList.size(); i++)
+            addMarker(sampleList.get(i), false, i);
 
         marker_num = sampleList.size();
     }
 
-        private Marker addMarker(MarkerItem markerItem, boolean isSelectedMarker, int index) {
+    private Marker addMarker(MarkerItem markerItem, boolean isSelectedMarker, int index) {
         LatLng position = new LatLng(markerItem.getLat(), markerItem.getLng());
         Log.d(TAG, "Add marker ! ");
 
@@ -160,7 +173,6 @@ public class Notifi extends FragmentActivity implements
         markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
         markerOptions.alpha(0.7f);
         markerOptions.title(placeInfos.get(index).getName()); //index로 지정
-
         return mMap.addMarker(markerOptions);
     }
 
@@ -183,21 +195,19 @@ public class Notifi extends FragmentActivity implements
 
     @Override
     public boolean onMarkerClick(Marker marker) {
-        if(prvMarker != null)
+        if (prvMarker != null)
             prvMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
 
         marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
         prvMarker = marker;
 
-        for(int i=0; i<marker_num ; i++){
-            if(marker.getTitle().compareTo(placeInfos.get(i).getName()) == 0)
-            {  // 원하는 정보 여기에 뿌리기
-                tv1.setText("NAME\n"+marker.getTitle()+"\nTYPE\n"+placeInfos.get(i).getTypes()[0]+","+
-                placeInfos.get(i).getTypes()[1]+"\nOPEN NOW\n"+placeInfos.get(i).getOpen_now()+"\nVICINITY\n"+placeInfos.get(i).getVicinity()
-                +"\nRATING\n"+placeInfos.get(i).getRating()+"\nPRICE LEVEL\n"+placeInfos.get(i).getPrice_level());
+        for (int i = 0; i < marker_num; i++) {
+            if (marker.getTitle().compareTo(placeInfos.get(i).getName()) == 0) {  // 원하는 정보 여기에 뿌리기
+                tv1.setText("NAME\n" + marker.getTitle() + "\nTYPE\n" + placeInfos.get(i).getTypes()[0] + "," +
+                        placeInfos.get(i).getTypes()[1] + "\nOPEN NOW\n" + placeInfos.get(i).getOpen_now() + "\nVICINITY\n" + placeInfos.get(i).getVicinity()
+                        + "\nRATING\n" + placeInfos.get(i).getRating() + "\nPRICE LEVEL\n" + placeInfos.get(i).getPrice_level());
             }
         }
-
 
 
         return false;
@@ -245,14 +255,16 @@ public class Notifi extends FragmentActivity implements
 
     }
 
-    public void readArr(){
+    public void readArr() {
+
+        Log.d(TAG, "Read Arr ! ");
         FileInputStream fis = null;
         ObjectInputStream ois = null;
 
         File data = getDir(getApplicationContext().getPackageName(), MODE_PRIVATE);
 
         try {
-            fis = new FileInputStream(new File(data+"/"+"arr.txt"));
+            fis = new FileInputStream(new File(data + "/" + "arr.txt"));
             ois = new ObjectInputStream(fis);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -263,16 +275,16 @@ public class Notifi extends FragmentActivity implements
         }
 
         try {
-            placeInfos = (ArrayList)ois.readObject();
+            placeInfos = (ArrayList) ois.readObject();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
-        }finally{
+        } finally {
             try {
-                if(fis != null)
+                if (fis != null)
                     fis.close();
-                if(ois != null)
+                if (ois != null)
                     ois.close();
             } catch (IOException e) {
                 e.printStackTrace();

@@ -18,8 +18,8 @@ import android.view.View;
 
 // GMS
 import com.example.idis.gpscaster.Frag3_RealtimeGPS.PlaceInfo;
+import com.example.idis.gpscaster.Frag5_Setting.ListData;
 import com.example.idis.gpscaster.GPSCollecting.GPSDatabase;
-import com.example.idis.gpscaster.GPSCollecting.PlaceDetail;
 import com.example.idis.gpscaster.R;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -41,19 +41,21 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+
 import static android.util.Log.*;
 
 
-public class PlaceRecommendationService implements
+public class PlaceRecommendationService
+        implements
         Serializable,
         GoogleApiClient.OnConnectionFailedListener,
         GoogleApiClient.ConnectionCallbacks {
-
 
     public static final String TAG = "PlaceRecommendationService";
     public static final String TAG2 = "InfoConfirm";
     private Context context;
     private Resources resources;
+    ListData listData;
 
     //Thread
     private Handler mHandler;
@@ -67,31 +69,31 @@ public class PlaceRecommendationService implements
     //For Compute
     private int count_id = 0;
     private int max_countid = 10;
-    private double primary_percent=0.6;
+    private double primary_percent = 0.6;
 
     //GoogleClientApi
-    GoogleApiClient mGoogleApiClient=null;
-    PlaceDetail placeDetail=null;
-    private static final int GOOGLE_API_CLIENT_ID=0;
+    GoogleApiClient mGoogleApiClient = null;
+    private static final int GOOGLE_API_CLIENT_ID = 0;
 
     //GooglePlaceDetail Web Key
     private String key = "AIzaSyAkEp3BvsggrTFL6u2cQeLDZOmwSjyrk68";
     private String testHttp = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=52.20956489999999,21.0208235&radius=400&types=cafe&key=AIzaSyAkEp3BvsggrTFL6u2cQeLDZOmwSjyrk68";
 
     //Its own
-    private static PlaceRecommendationService placeRecommendationService=null;
+    private static PlaceRecommendationService placeRecommendationService;
 
     //For type searching
     GPSDatabase mGPSDatabase;
     private static final String TABLE_GPSDATA = "GPSDATA";
-    String max_placeid="";
+    String max_placeid = "";
 
     //Variable in RUNNNNN Thread
-    Double lat_; Double lng_;
+    Double lat_;
+    Double lng_;
     String page_; //Notification에 전달할 json
 
     //PlaceDetail ArrayList
-    private static ArrayList<PlaceInfo> place_arr=null ;
+    ArrayList<PlaceInfo> place_arr;
 
     //View
     View rootView;
@@ -103,14 +105,14 @@ ArrayList에 저장해두었다가 10번의 횟수가 채워지면
 그때는 장소추천서비스 실시(json parsing)
 */
 
-    public PlaceRecommendationService(Context context, Resources resources) {
+    private PlaceRecommendationService(Context context, Resources resources) {
         this.context = context;
         this.resources = resources;
 
         PlaceId = new ArrayList<String>();
         PlaceIdCount = new ArrayList<Integer>();
 
-        if( (mGoogleApiClient == null) || (mGoogleApiClient.isConnected()==false))
+        if ((mGoogleApiClient == null) || (mGoogleApiClient.isConnected() == false))
             setGoogleApiClient();
 
         mGPSDatabase = mGPSDatabase.getInsance(context);
@@ -118,29 +120,22 @@ ArrayList에 저장해두었다가 10번의 횟수가 채워지면
 
         place_arr = new ArrayList<PlaceInfo>();
 
-
-
+        listData = listData.getInstace(context);
     }
 
 
-    public static PlaceRecommendationService getInstance(Context context, Resources resources){
-        if(placeRecommendationService == null){
-            placeRecommendationService = new PlaceRecommendationService(context,resources);
+    public static PlaceRecommendationService getInstance(Context context, Resources resources) {
+        if (placeRecommendationService == null) {
+            placeRecommendationService = new PlaceRecommendationService(context, resources);
             Log.d(TAG2, "PlaceRecommendationService new ");
         }
-
-        return placeRecommendationService;
-    }
-
-    public static PlaceRecommendationService returnObject(){
         return placeRecommendationService;
     }
 
     public void insertPlaceId(String placeid) {
 
-        Log.d(TAG, "insertPlaceId : " + placeid);
 
-        if(placeid == null)
+        if (placeid == null)
             return;
 
         int index = PlaceId.indexOf(placeid);
@@ -163,27 +158,28 @@ ArrayList에 저장해두었다가 10번의 횟수가 채워지면
     }
 
     public void lookupPlaceId() {
-        d(TAG, "lookupPlaceid : ");
 
-        int max=-1;
-        int max_index=-1;
-        max_placeid="";
+        int max = -1;
+        int max_index = -1;
+        max_placeid = "";
 
 
-        for(int i=0; i<PlaceIdCount.size();i++) {
-            if(max<PlaceIdCount.get(i)){
+        for (int i = 0; i < PlaceIdCount.size(); i++) {
+            if (max < PlaceIdCount.get(i)) {
                 max_index = i;
                 max = PlaceIdCount.get(i);
             }
         }
 
-        for(int i=0; i<PlaceIdCount.size(); i++)
-        {
-            d(TAG,"ID : "+PlaceId.get(i)+", N : "+PlaceIdCount.get(i));
-        }
 
         max_placeid = PlaceId.get(max_index);
-        if(max/max_countid >= primary_percent){
+
+        if ((max_placeid.compareTo(listData.getPlace("home").getPlace_id()) == 0) ||
+                (max_placeid.compareTo(listData.getPlace("company").getPlace_id()) == 0)) //만약현재장소가 집이거나 회사이면
+            return;
+
+        listData.getPlace("company");
+        if (max / max_countid >= primary_percent) {
             Thread1 t1 = new Thread1();
             t1.start();
             try {
@@ -202,13 +198,13 @@ ArrayList에 저장해두었다가 10번의 횟수가 채워지면
 
             /*ArrayList size check */
             Log.d(TAG2, "FROM NOW NOTIFICATION !! ");
-            Log.d(TAG2, "place arr size = "+place_arr.size());
-            Log.d(TAG2, "place arr size2 = "+getPlace_arr().size());
+            Log.d(TAG2, "place arr size = " + place_arr.size());
+            Log.d(TAG2, "place arr size2 = " + getPlace_arr().size());
             notificationService();
         }
     }
 
-    public void setGoogleApiClient(){
+    public void setGoogleApiClient() {
                 /*☆★☆★☆★☆★Able to fail☆★☆★☆★☆★☆★*/
         mGoogleApiClient = new GoogleApiClient.Builder(context)
                 .addApi(Places.GEO_DATA_API)
@@ -220,9 +216,9 @@ ArrayList에 저장해두었다가 10번의 횟수가 채워지면
     }
 
 
-    public void notificationService(){
+    public void notificationService() {
 
-        NotificationManager manager= (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         NotificationCompat.Builder builder = (NotificationCompat.Builder) new NotificationCompat.Builder(context)
                 .setSmallIcon(R.drawable.profile)  //상태표시줄에 보이는 아이콘 모양
@@ -231,7 +227,7 @@ ArrayList에 저장해두었다가 10번의 횟수가 채워지면
                 .setContentText("Do you want me to suggest the places nearby?");
 
         Intent intent = new Intent(context, Notifi.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         intent.putExtra("intent1", "aaa");
         savearr();
         //클릭할 때 까지 액티비티 실행을 보류하고 있는 PendingIntent 객체 생성
@@ -245,47 +241,48 @@ ArrayList에 저장해두었다가 10번의 횟수가 채워지면
     }
 
     @Override
-    public void onConnected(Bundle bundle) { Log.d(TAG, "onConnected");
+    public void onConnected(Bundle bundle) {
     }
 
     @Override
     public void onConnectionSuspended(int i) {
-        d(TAG, "onConnected");
     }
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
-        d(TAG, "onConnected");
+
     }
 
-    public ArrayList<PlaceInfo> getPlace_arr(){
+    public ArrayList<PlaceInfo> getPlace_arr() {
         Log.d(TAG2, "getPlace_arr return ");
-        Log.d(TAG2, "place arr  in GetPlaceArr  = "+place_arr.size());
+        Log.d(TAG2, "place arr  in GetPlaceArr  = " + place_arr.size());
         return place_arr;
     }
 
-    public void savearr(){
+    public void savearr() {
         FileOutputStream fos = null;
         ObjectOutputStream oos = null;
 
         File data = context.getDir(context.getPackageName(), Context.MODE_PRIVATE);
-        try{
-            fos = new FileOutputStream(new File(data+"/"+"arr.txt"));
+        try {
+            fos = new FileOutputStream(new File(data + "/" + "arr.txt"));
             oos = new ObjectOutputStream(fos);
             oos.writeObject(place_arr);
 
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
-        }finally {
-            if(fos != null)
+        } finally {
+            if (fos != null)
                 try {
                     fos.close();
+                    Log.d("FILE", "File close ! fos is closed");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            if(oos != null)
+            if (oos != null)
                 try {
                     oos.close();
+                    Log.d("FILE", "OutputStream close ! oos is closed");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -293,138 +290,115 @@ ArrayList에 저장해두었다가 10번의 횟수가 채워지면
     }
 
 
-    class Thread1 extends Thread{
+    class Thread1 extends Thread {
         @Override
-                 public void run() {
-                    String placeType=null;
-                    URL url = null;
-                    HttpURLConnection urlConnection = null;
-                    BufferedInputStream buf = null;
-                    String line = "";
-                    String page = "";
+        public void run() {
+            String placeType = null;
+            URL url = null;
+            HttpURLConnection urlConnection = null;
+            BufferedInputStream buf = null;
+            String line = "";
+            String page = "";
 
-                    Log.d(TAG, "Going to search place detail!! "+max_placeid);
-                    Cursor c = mGPSDatabase.rawQuery("SELECT * FROM "+TABLE_GPSDATA+
-                            " where a_placeid='"+max_placeid+"';");
-                    if(c==null || c.moveToFirst() == false)
-                        Log.e(TAG, "Cursor Error!");
-                    else{
-                        double lat = c.getDouble(c.getColumnIndex("a_lat"));
-                        double lng = c.getDouble(c.getColumnIndex("a_lng"));
+            //Log.d(TAG, "Going to search place detail!! "+max_placeid);
+            Cursor c = mGPSDatabase.rawQuery("SELECT * FROM " + TABLE_GPSDATA +
+                    " where a_placeid='" + max_placeid + "';");
 
-                        lat_ = lat;
-                        lng_ = lng;
+            if (c == null || c.moveToFirst() == false)
+                //            Log.e(TAG, "Cursor Error!");
+                ;
+            else {
+                double lat = c.getDouble(c.getColumnIndex("a_lat"));
+                double lng = c.getDouble(c.getColumnIndex("a_lng"));
 
-                        String type = c.getString(c.getColumnIndex("a_placetype"));
-                        Log.d(TAG, "lat = "+lat+", lng="+lng+", type = "+type);
+                lat_ = lat;
+                lng_ = lng;
 
-                        try {
-                            String a = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?" +
-                                    "location="+lat+","+lng+"&radius=100&types="+type+
-                                    "&key="+key;
-                            Log.d(TAG2, a);
-                            url = new URL("https://maps.googleapis.com/maps/api/place/nearbysearch/json?" +
-                                    "location="+lat+","+lng+"&radius=100&types="+type+
-                                    "&key="+key);
+                String type = c.getString(c.getColumnIndex("a_placetype"));
+                //      Log.d(TAG, "lat = "+lat+", lng="+lng+", type = "+type);
 
-                            //url = new URL(testHttp);
-                            urlConnection = (HttpURLConnection) url.openConnection();
-                            buf = new BufferedInputStream(urlConnection.getInputStream());
-                            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(buf, "UTF-8"));
-                            while ((line = bufferedReader.readLine()) != null) {
-                                Log.d(TAG, line);
-                                page += line;
-                            }
-                            page_ = page;// Notification에 전달할 거 옮겨담기
+                try {
+                    String a = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?" +
+                            "location=" + lat + "," + lng + "&radius=100&types=" + type +
+                            "&key=" + key;
+                    Log.d(TAG2, a);
+                    url = new URL("https://maps.googleapis.com/maps/api/place/nearbysearch/json?" +
+                            "location=" + lat + "," + lng + "&radius=100&types=" + type +
+                            "&key=" + key);
 
-                        }catch(MalformedURLException me){
-                            me.printStackTrace();
-                        }catch(IOException e) {
-                            e.printStackTrace();
-                        }catch(Exception e){
-                            e.printStackTrace();
-                        }
+                    //url = new URL(testHttp);
+                    urlConnection = (HttpURLConnection) url.openConnection();
+                    buf = new BufferedInputStream(urlConnection.getInputStream());
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(buf, "UTF-8"));
+                    while ((line = bufferedReader.readLine()) != null) {
+                        //             Log.d(TAG, line);
+                        page += line;
                     }
+                    page_ = page;// Notification에 전달할 거 옮겨담기
+
+                } catch (MalformedURLException me) {
+                    me.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
+            }
+        }
     }
-    class Thread2 extends Thread{
+
+    class Thread2 extends Thread {
         @Override
-        public void run(){
+        public void run() {
             try {
                 JSONObject json = new JSONObject(page_);
                 JSONArray jsonArray = json.getJSONArray("results");
-                Log.d(TAG, "len = "+jsonArray.length());
-                int k=0;
-
-                for(k=0; k<jsonArray.length(); k++)
-                {
+                //Log.d(TAG, "len = "+jsonArray.length());
+                int k = 0;
+                place_arr = new ArrayList<PlaceInfo>();
+                for (k = 0; k < jsonArray.length(); k++) {
                     PlaceInfo p1 = new PlaceInfo();
                     JSONObject temp = jsonArray.getJSONObject(k);
 
-                    if(temp == null)
-                        Log.d(TAG, "json temp is null");
-                    Log.d(TAG2, "k---------------"+k);
-                    Log.d(TAG, "lat = "+temp.getJSONObject("geometry").getJSONObject("location").getDouble("lat"));
+                    if (temp == null)
+                        //     Log.d(TAG, "json temp is null");
+                        ;
                     p1.setLat(temp.getJSONObject("geometry").getJSONObject("location").getDouble("lat"));
                     p1.setLng(temp.getJSONObject("geometry").getJSONObject("location").getDouble("lng"));
                     p1.setName(temp.getString("name"));
                     //No value= -1
-                    if(!temp.isNull("opening_hours")){
+                    if (!temp.isNull("opening_hours")) {
                         p1.setOpen_now(temp.getJSONObject("opening_hours").getString("open_now"));
-                        Log.d(TAG, "opening_hours : "+temp.getString("opening_hours"));
-                    }else
-                    {
-                        Log.d(TAG, "opening_now is null in "+p1.getName());
+                    } else {
                         p1.setOpen_now("-1");
                     }
-                    if(temp.getString("vicinity")!= null)
+                    if (temp.getString("vicinity") != null)
                         p1.setVicinity(temp.getString("vicinity"));
                     else
                         p1.setVicinity("-1");
-                    if(!temp.isNull("rating"))
+                    if (!temp.isNull("rating"))
                         p1.setRating(temp.getDouble("rating"));
                     else
                         p1.setRating(-1.0);
                     String types = temp.getString("types").replaceAll("\"", "");
-                   // String types = temp.getString("types").replaceAll("\"", "");
+                    // String types = temp.getString("types").replaceAll("\"", "");
                     types = types.substring(1, types.length() - 2);
                     String[] typeArray = types.split(",");
                     p1.setTypes(typeArray);
 
-                    //Log.d(TAG, "p1="+p1.getName()+p1.getLat()+p1.getLng()+p1.getVicinity()+p1.getRating()+p1.getTypes()[0]);
-                    //Log.d(TAG, "p1 opening = "+p1.getOpen_now());
-                    Log.d(TAG2,"p"+k+p1.getName());
-                    Log.d(TAG2,"p"+k+p1.getVicinity());
-                    Log.d(TAG2,"p"+k+p1.getRating());
-                    Log.d(TAG2,"p"+k+p1.getTypes());
-                    Log.d(TAG2,"p"+k+p1.getOpen_now());
+                    Log.d(TAG2, "p" + k + p1.getName());
+                    Log.d(TAG2, "p" + k + p1.getVicinity());
+                    Log.d(TAG2, "p" + k + p1.getRating());
+                    Log.d(TAG2, "p" + k + p1.getTypes());
+                    Log.d(TAG2, "p" + k + p1.getOpen_now());
 
                     place_arr.add(p1);
                 }
-/*
-                JSONArray typeObj = json1.getJSONArray("types");
-                String types = typeObj.toString().replaceAll("\"", "");
-                types = types.substring(1, types.length() - 2);
-                String[] typeArray = types.split(",");
-                JSONObject location = json1.getJSONObject("geometry").getJSONObject("location");
-                double lat = location.getDouble("lat");
-                double lng = location.getDouble("lng");
-                Log.d(TAG, "location lat" + lat + ",lng=" + lng);
-                Log.d(TAG, "types=" + types);
-
-                 2; i++)
-                    type += typeArray[i] + "|";for (int i = 0; i < typeArray.length -
-                type += typeArray[typeArray.length - 2];
-                place_type = type;
-*/
-
-                //requestNearByPlace(lat, lng, typeArray);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
-
 
 
 }

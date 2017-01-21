@@ -53,7 +53,7 @@
          be able to display a light UI: this lightens its background to make
          a light UI more visible. -->
     <drawable name="screen_background_light_transparent">#80ffffff</drawable>
-    <color name="safe_mode_text">#80ffffff</color>
+    <color name="safe_mode_text">#90ffffff</color>
     <color name="white">#ffffffff</color>
     <color name="black">#ff000000</color>
     <color name="transparent">#00000000</color>
@@ -73,7 +73,7 @@
     <color name="hint_foreground_light">#808080</color>
     <color name="highlighted_text_dark">#9983CC39</color>
     <color name="highlighted_text_light">#9983CC39</color>
-    <color name="link_text_dark">#5c5cff</color>
+    <color name="link_text_dark">#f05c5cff</color>
     <color name="link_text_light">#0000ee</color>
     <color name="suggestion_highlight_text">#177bbd</color>
 

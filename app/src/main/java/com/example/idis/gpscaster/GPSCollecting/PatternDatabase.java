@@ -22,9 +22,11 @@ public class PatternDatabase {
     private static final String TABLE_GPSDATA = "PATTERNDATA";
     private String FILE_PATH ;
     private static final String TAG = "DB2";
+    private static final String TAG_DB = "PatternDB";
 
     Context mContext = null;
     private static PatternDatabase mDatabase = null; //singleton
+    private static String TABLE_PATTERN = "PATTERNDATA";
     private SQLiteDatabase mDb;
     private DatabaseHelper dbHelper;
 
@@ -44,6 +46,7 @@ public class PatternDatabase {
     public boolean open() {
         dbHelper = new DatabaseHelper(mContext, FILE_PATH);
         mDb = dbHelper.getWritableDatabase();
+        dbHelper.createTable(mDb);
         Log.e(TAG,"open");
         return true;
     }
@@ -54,11 +57,11 @@ public class PatternDatabase {
     }
 
     public Cursor rawQuery(String SQL) {
-        Log.e(TAG,"rawQuery start");
+        Log.e(TAG_DB,"rawQuery start");
         Cursor c1 = null;
         try {
             c1 = mDb.rawQuery(SQL, null);
-            Log.e(TAG,"get cursor");
+            Log.e(TAG_DB,"get cursor");
         } catch (Exception ex) {
 
         }
@@ -67,6 +70,7 @@ public class PatternDatabase {
     public boolean execSQL(String SQL) {
         try {
             mDb.execSQL(SQL);
+            Log.d(TAG_DB, "execSQL!!");
         } catch (Exception ex) {
             return false;
         }
@@ -75,7 +79,7 @@ public class PatternDatabase {
 
 
     public void insertSQL(String table, ContentValues values){
-        Log.e(TAG,"insertdb start");
+        Log.d(TAG_DB,"insert in PatternDB");
         try{
             mDb.insert(table, null, values);
 
@@ -100,13 +104,26 @@ public class PatternDatabase {
             String SQL = "create table if not exists "+TABLE_GPSDATA +
                     "(a_id INTEGER PRIMARY KEY AUTOINCREMENT, "+//ID Index
                     "a_day INT,"+//sunday-1 monday-2 ..sat-6
-                    "a_time TEXT,"+
+                    "a_time INT,"+
                     "a_placeid TEXT,"+
                     "a_placetype TEXT," +
-                    "a_frequency INT)";//cafe|point_of_interest..
+                    "a_frequency INT);";//cafe|point_of_interest..
             db.execSQL(SQL);
             Log.e(TAG,"createDB");
 
+        }
+        public void createTable(SQLiteDatabase db)
+        {
+            //Create Database Table
+            String SQL = "create table if not exists "+TABLE_GPSDATA +
+                    "(a_id INTEGER PRIMARY KEY AUTOINCREMENT, "+//ID Index
+                    "a_day INT,"+//sunday-1 monday-2 ..sat-6
+                    "a_time INT,"+
+                    "a_placeid TEXT,"+
+                    "a_placetype TEXT," +
+                    "a_frequency INT);";//cafe|point_of_interest..
+            db.execSQL(SQL);
+            Log.e(TAG,"createDB");
         }
 
         @Override
@@ -120,5 +137,22 @@ public class PatternDatabase {
             db.execSQL("drop table if exists "+ TABLE_GPSDATA);
             onCreate(db);
         }
+
+    }
+    public String lookupDb()
+    {
+        String result="";
+        Cursor c = mDatabase.rawQuery("SELECT * from "+TABLE_PATTERN+";");
+        while(c != null && c.moveToNext()){
+            Log.d(TAG_DB, "num of cursor = "+c.getCount());
+            int day = c.getInt(c.getColumnIndex("a_day"));
+            int time = c.getInt(c.getColumnIndex("a_time"));
+            String placeid = c.getString(c.getColumnIndex("a_placeid"));
+            String placetype = c.getString(c.getColumnIndex("a_placetype"));
+            int freq = c.getInt(c.getColumnIndex("a_frequency"));
+            result += "day:"+day+", time:"+time+", placeid="+placeid + ", placetype:"+placetype+"freq:"+freq+"\n";
+        }
+
+        return result;
     }
 }

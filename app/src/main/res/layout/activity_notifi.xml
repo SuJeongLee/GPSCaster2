@@ -17,16 +17,16 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:background="@color/newPurple">
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:scrollbars="vertical"
-            android:id="@+id/tv1"
-            android:background="#ffffff"
-            android:padding="5dp"
-            android:textColor="@color/keyguard_avatar_frame_shadow_color"
-            />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:scrollbars="vertical"
+                android:id="@+id/tv1"
+                android:background="#ffffff"
+                android:padding="5dp"
+                android:textColor="@color/keyguard_avatar_frame_shadow_color"
+                />
         </LinearLayout>
 
     </LinearLayout>

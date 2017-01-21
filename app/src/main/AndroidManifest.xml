@@ -55,9 +55,23 @@
             android:name=".RecommendationService.Notifi"
             android:label="@string/title_activity_notifi" />
         <activity
-            android:name=".RecommendationService.TransitActivity"
-            android:label="@string/title_activity_transit"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"></activity>
+            android:name=".Frag4_CreatePattern.DailyNotifi"
+            android:label="@string/title_activity_daily_notifi"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <activity
+            android:name=".Frag5_Setting.SearchingHomeActivity"
+            android:label="@string/title_activity_setting"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <activity
+            android:name=".CustomUi.LoginActivity"
+            android:label="@string/title_activity_login"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

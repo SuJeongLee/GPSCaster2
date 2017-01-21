@@ -37,4 +37,7 @@
     <string name="title_activity_shopping_cart">ShoppingCart</string>
     <string name="title_activity_notifi">Notifi</string>
     <string name="title_activity_transit">TransitActivity</string>
+    <string name="title_activity_daily_notifi">DailyNotifi</string>
+    <string name="title_activity_setting">SettingActivity</string>
+    <string name="title_activity_login">LoginActivity</string>
 </resources>
